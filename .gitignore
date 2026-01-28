@@ -1,0 +1,43 @@
+# --------------------
+# Python
+# --------------------
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+
+# Virtual Environment
+.venv/
+venv/
+env/
+
+# IDE
+.idea/
+.vscode/
+
+# --------------------
+# Uploaded / Generated Files (IMPORTANT)
+# --------------------
+uploads/
+previews/
+converted_images/
+image_pdfs/
+compressed_pdfs/
+pdf_to_image/
+splits/
+merges/
+zips/
+bg_remove/
+images/
+
+# --------------------
+# OS files
+# --------------------
+.DS_Store
+Thumbs.db
+
+# --------------------
+# Environment variables
+# --------------------
+.env
