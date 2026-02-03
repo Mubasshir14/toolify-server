@@ -4,6 +4,7 @@ import { bgRemoverRoutes } from "./modules/bg-remove/bgRemove.route.js";
 import { imageResizeRoutes } from "./modules/image-resize/imageResize.route.js";
 import { pdfRoutes } from "./modules/pdf/pdf.route.js";
 import { pdfTOImageRoutes } from "./modules/pdf-to-image/pdfToImage.route.js";
+import { docxToPdfRoutes } from "./modules/docx-to-pdf/docxToPdf.routes.js";
 
 const router = Router();
 
@@ -24,10 +25,13 @@ const moduleRoutes = [
     path: "/pdf",
     route: pdfRoutes,
   },
-  //route
   {
     path: "/pdf",
     route: pdfTOImageRoutes,
+  },
+  {
+    path: "/",
+    route: docxToPdfRoutes,
   },
 ];
 

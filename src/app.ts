@@ -25,8 +25,14 @@ app.use(
   express.static(path.join(process.cwd(), "static"), {
     index: false,
     maxAge: "1h",
+    setHeaders: (res) => {
+      res.setHeader("Access-Control-Allow-Origin", "*");
+      res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+      res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+    },
   }),
 );
+
 
 app.use("/api", router);
 app.use(errorHandler);

@@ -1,58 +1,54 @@
 import type { Request, Response } from "express";
+import path from "path";
+import { safeUnlink } from "../../utils/file.util.js";
+import { processImage } from "./imageResize.service.js";
 
-import fs from "fs";
-import { compressImageService, convertImageService, imagesToPdfService } from "./imageResize.service.js";
-
-export const convertImageController = async (req: Request, res: Response) => {
+export const resizeImageCtrl = async (req: Request, res: Response) => {
   try {
-    const file = req.file!;
-    const { target_format } = req.body;
-
-    const { outputPath, outputName } =
-      await convertImageService(file.path, file.originalname, target_format);
-
-    fs.unlinkSync(file.path);
-    res.download(outputPath, outputName);
-
-  } catch (e: any) {
-    res.status(400).json({ message: e.message });
-  }
-};
-
-export const compressImageController = async (req: Request, res: Response) => {
-  try {
-    const file = req.file!;
-    const { target_kb, quality_percent } = req.body;
-
-    const { outputPath, outputName } =
-      await compressImageService(
-        file.path,
-        file.originalname,
-        target_kb ? Number(target_kb) : undefined,
-        quality_percent ? Number(quality_percent) : undefined
-      );
-
-    fs.unlinkSync(file.path);
-    res.download(outputPath, outputName);
-
-  } catch (e: any) {
-    res.status(400).json({ message: e.message });
-  }
-};
-
-export const imagesToPdfController = async (req: Request, res: Response) => {
-  try {
-    const files = req.files as Express.Multer.File[];
-    if (!files || files.length === 0) {
-      return res.status(400).json({ message: "Images required" });
+    const file = req.file;
+    if (!file) {
+      return res.status(400).json({
+        status: "error",
+        message: "Image file is required",
+      });
     }
 
-    const { outputPath, outputName } = await imagesToPdfService(files);
+    // 🔥 frontend sends these
+    const cropRaw = req.body.crop;
+    const rotateRaw = req.body.rotate;
+    const scaleRaw = req.body.scale || req.body.percentage;
+    const widthRaw = req.body.width || req.body.target_width;
+    const heightRaw = req.body.height || req.body.target_height;
 
-    files.forEach(f => fs.unlinkSync(f.path));
-    res.download(outputPath, outputName);
+    const crop = cropRaw ? JSON.parse(cropRaw) : null;
+    const rotate = rotateRaw ? Number(rotateRaw) : 0;
+    const scale = scaleRaw ? Number(scaleRaw) : undefined;
+    const width = widthRaw ? Number(widthRaw) : undefined;
+    const height = heightRaw ? Number(heightRaw) : undefined;
 
-  } catch (e: any) {
-    res.status(400).json({ message: e.message });
+    const outputPath = await processImage({
+      inputPath: file.path,
+      crop,
+      rotate,
+      scale,
+      width,
+      height,
+    });
+
+    safeUnlink(file.path);
+
+    const fileName = path.basename(outputPath);
+
+    return res.json({
+      status: "success",
+      preview: `/api/image/preview/${fileName}`,
+      download: `/api/image/download/${fileName}`,
+    });
+  } catch (err) {
+    console.error("❌ Image processing failed:", err);
+    return res.status(500).json({
+      status: "error",
+      message: "Image processing failed",
+    });
   }
 };

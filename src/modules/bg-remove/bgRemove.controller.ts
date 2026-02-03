@@ -1,52 +1,53 @@
 import type { Request, Response } from "express";
+import { bgRemoveSchema } from "./bgRemove.validator.js";
+import { processImage } from "./bgRemove.service.js";
 
-import fs from "fs";
-import { bgRemoveService } from "./bgRemove.service.js";
 
-export const bgRemoveController = async (
-  req: Request,
-  res: Response
-) => {
+export const bgRemove = async (req: Request, res: Response) => {
   try {
-    const image = req.file;
+    const files = req.files as {
+      [fieldname: string]: Express.Multer.File[];
+    };
 
-    // 🔒 SAFE TYPE NARROWING
-    let bgImage: Express.Multer.File | undefined;
-
-    if (
-      req.files &&
-      !Array.isArray(req.files) &&
-      req.files["bg_image"] &&
-      req.files["bg_image"].length > 0
-    ) {
-      bgImage = req.files["bg_image"][0];
-    }
+    const image = files?.image?.[0];
+    const bgImage = files?.bg_image?.[0];
 
     if (!image) {
-      return res.status(400).json({ message: "Image required" });
+      return res.status(400).json({ message: "Image is required" });
     }
 
-    const { bg_type, bg_color } = req.body;
+    if (!image.mimetype.startsWith("image/")) {
+      return res.status(400).json({
+        message: "Only image file is allowed"
+      });
+    }
 
-    const result = await bgRemoveService(
-      image.path,
-      bg_type,
-      bg_color,
-      bgImage?.path
-    );
+    const parsed = bgRemoveSchema.safeParse(req.body);
 
-    // 🧹 cleanup
-    fs.unlinkSync(image.path);
-    if (bgImage) fs.unlinkSync(bgImage.path);
+    if (!parsed.success) {
+      return res.status(400).json({
+        message: parsed.error.issues[0].message
+      });
+    }
 
-    res.json({
-      status: "success",
-      preview: result.preview,
-      final: result.final
+    if (parsed.data.bg_type === "image" && !bgImage) {
+      return res.status(400).json({
+        message: "Background image is required"
+      });
+    }
+
+    const result = await processImage({
+      image,
+      bgType: parsed.data.bg_type,
+      bgColor: parsed.data.bg_color,
+      bgImage
     });
 
-  } catch (err: any) {
-    console.error("❌ BG REMOVE ERROR:", err);
-    res.status(500).json({ message: err.message });
+    return res.json(result);
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({
+      message: "Background remove failed"
+    });
   }
 };

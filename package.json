@@ -4,7 +4,7 @@
   "description": "",
   "type": "module",
   "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only --esm src/server.ts",
+    "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js"
   },
@@ -14,6 +14,7 @@
   "dependencies": {
     "@imgly/background-removal-node": "^1.4.5",
     "archiver": "^7.0.1",
+    "axios": "^1.13.4",
     "cors": "^2.8.6",
     "dotenv": "^17.2.3",
     "execa": "^9.6.1",
@@ -23,6 +24,7 @@
     "helmet": "^8.1.0",
     "mongoose": "^9.1.5",
     "multer": "^2.0.2",
+    "onnxruntime-node": "^1.23.2",
     "pdf-lib": "^1.17.1",
     "pdf2pic": "^3.2.0",
     "sharp": "^0.34.5",
@@ -35,7 +37,9 @@
     "@types/express": "^5.0.6",
     "@types/multer": "^2.0.0",
     "@types/node": "^25.2.0",
+    "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
+    "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   }
 }

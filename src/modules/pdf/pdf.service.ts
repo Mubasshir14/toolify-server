@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import os from "os";
 import { PDFDocument } from "pdf-lib";
 import ghostscript from "ghostscript-node";
 import { v4 as uuid } from "uuid";
@@ -10,6 +11,8 @@ const MERGE_DIR = "static/pdfs/merge";
 
 fs.mkdirSync(SPLIT_DIR, { recursive: true });
 fs.mkdirSync(MERGE_DIR, { recursive: true });
+const GS_COMMAND =
+  os.platform() === "win32" ? "gswin64c" : "gs";
 
 export const getPdfMetadata = async (pdfPath: string) => {
   const bytes = fs.readFileSync(pdfPath);
@@ -77,15 +80,15 @@ export const compressPdfService = async (
     low: "/ebook"
   };
 
-  await execa("gs", [
+ await execa(GS_COMMAND, [
     "-sDEVICE=pdfwrite",
     "-dCompatibilityLevel=1.4",
-    `-dPDFSETTINGS=${QUALITY_MAP[quality]}`,
+    "-dPDFSETTINGS=/printer",
     "-dNOPAUSE",
     "-dQUIET",
     "-dBATCH",
     `-sOutputFile=${outputPath}`,
-    input
+    input,
   ]);
 
   return outputPath;
