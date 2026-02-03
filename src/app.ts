@@ -9,7 +9,12 @@ import { apiRateLimiter } from "./middlewares/rateLimiter.js";
 const app = express();
 
 app.use(helmet());
-app.use(cors());
+app.use(
+  cors({
+    origin: ['http://localhost:3000', 'https://toolify-client.vercel.app'],
+    credentials: true,
+  }),
+);
 app.use(express.json());
 app.use(apiRateLimiter);
 
