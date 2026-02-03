@@ -24,6 +24,7 @@ const moduleRoutes = [
     path: "/pdf",
     route: pdfRoutes,
   },
+  //route
   {
     path: "/pdf",
     route: pdfTOImageRoutes,
